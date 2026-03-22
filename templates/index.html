@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nykaa Ingredients Scraper</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #fc2779; /* Nykaa Pink */
+            --secondary: #ff4081;
+            --bg-dark: #121212;
+            --card-bg: rgba(30, 30, 30, 0.7);
+            --text-main: #ffffff;
+            --text-muted: #b0b0b0;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #3a1c29, #121212);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            padding: 3rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), #ff758c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 2rem;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="number"] {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            width: 120px;
+            transition: all 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(252, 39, 121, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(252, 39, 121, 0.4);
+            align-self: flex-end;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 20px rgba(252, 39, 121, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #status {
+            text-align: center;
+            margin: 1rem 0;
+            font-weight: 600;
+            color: var(--primary);
+            min-height: 24px;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 30px;
+            height: 30px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .table-container {
+            margin-top: 2rem;
+            max-height: 450px;
+            overflow-y: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: none; /* Hidden initially */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        th {
+            background: rgba(252, 39, 121, 0.1);
+            color: var(--primary);
+            padding: 15px;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .ingredients-cell {
+            color: var(--text-muted);
+            max-width: 400px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+
+        .ingredients-cell.expanded {
+            white-space: normal;
+            max-width: none;
+        }
+
+        a.prod-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        a.prod-link:hover {
+            color: #ff5c9d;
+            text-decoration: underline;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(252, 39, 121, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <header>
+        <h1><i class="fa-solid fa-wand-magic-sparkles"></i> Nykaa Ingredients Scraper</h1>
+        <p>Moisturizers & Daycreams Category</p>
+    </header>
+
+    <div class="controls">
+        <div class="input-group">
+            <label for="category">Category</label>
+            <select id="category" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 220px;">
+                <option value="view_all">-- View All Saved --</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}">{{ cat }}</option>
+                {% endfor %}
+                <option value="custom">-- Custom URL --</option>
+            </select>
+        </div>
+        <div class="input-group" id="customUrlGroup" style="display: none;">
+            <label for="custom_url">Custom Nykaa URL</label>
+            <input type="text" id="custom_url" placeholder="https://www.nykaa.com/..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 250px;">
+        </div>
+        <div class="input-group">
+            <label for="pages">Pages</label>
+            <input type="number" id="pages" value="1" min="1" max="10" style="width: 80px;">
+        </div>
+        <div class="input-group">
+            <label for="delay">Delay</label>
+            <input type="number" id="delay" value="1" min="0.5" max="5" step="0.5" style="width: 80px;">
+        </div>
+        <div style="display: flex; gap: 10px; align-self: flex-end;">
+            <button class="btn" id="scrapeBtn">
+                <i class="fa-solid fa-bolt"></i> Scrape
+            </button>
+            <button class="btn" id="viewBtn" style="background: rgba(255,255,255,0.1); box-shadow: none;">
+                <i class="fa-solid fa-eye"></i> View Saved
+            </button>
+            <button class="btn" id="downloadBtn" style="background: #2e7d32; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);">
+                <i class="fa-solid fa-download"></i> Download CSV
+            </button>
+        </div>
+    </div>
+
+    <div class="loading-spinner" id="spinner"></div>
+    <div id="status" style="margin-top: 10px;"></div>
+
+    <div class="table-container" id="tableContainer">
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Category</th>
+                    <th>Product Name</th>
+                    <th>Ingredients</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic Content -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const categorySelect = document.getElementById('category');
+    const customUrlGroup = document.getElementById('customUrlGroup');
+    const scrapeBtn = document.getElementById('scrapeBtn');
+    const viewBtn = document.getElementById('viewBtn');
+    const spinner = document.getElementById('spinner');
+    const statusDiv = document.getElementById('status');
+    const tableContainer = document.getElementById('tableContainer');
+    const tbody = document.querySelector('#resultsTable tbody');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    downloadBtn.addEventListener('click', () => {
+        window.location.href = '/download';
+    });
+
+    categorySelect.addEventListener('change', (e) => {
+        if (e.target.value === 'custom') {
+            customUrlGroup.style.display = 'flex';
+        } else {
+            customUrlGroup.style.display = 'none';
+        }
+    });
+
+    scrapeBtn.addEventListener('click', async () => {
+        const category = categorySelect.value;
+        if (category === 'view_all') {
+             statusDiv.innerHTML = `<span style="color:#ffb300;">⚠️ Please select a Category or Custom URL to Scrape.</span>`;
+             return;
+        }
+        const custom_url = document.getElementById('custom_url').value;
+        const pages = document.getElementById('pages').value;
+        const delay = document.getElementById('delay').value;
+
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Scraping started... Saving to CSV in real-time.`;
+        spinner.style.display = 'block';
+        tableContainer.style.display = 'none';
+        tbody.innerHTML = '';
+        scrapeBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('pages', pages);
+        formData.append('delay', delay);
+        if (category === 'custom') {
+            formData.append('custom_url', custom_url);
+        } else {
+            formData.append('category', category);
+        }
+
+        try {
+            const response = await fetch('/scrape', { method: 'POST', body: formData });
+            const result = await response.json();
+            spinner.style.display = 'none';
+            scrapeBtn.disabled = false;
+
+            if (result.status === 'success') {
+                statusDiv.innerHTML = `<span style="color: #4caf50;">✅ Scraped [${result.category}] Total: ${result.count} | With Ingredients: ${result.with_ingredients}</span>`;
+                renderTable(result.data, result.category);
+            } else {
+                statusDiv.innerText = `Error: ${result.message}`;
+            }
+        } catch (error) {
+            spinner.style.display = 'none';
+            scrapeBtn.disabled = false;
+            statusDiv.innerText = `Request Failed: ${error.message}`;
+        }
+    });
+
+    viewBtn.addEventListener('click', async () => {
+        const category = categorySelect.value;
+        spinner.style.display = 'block';
+        tableContainer.style.display = 'none';
+        tbody.innerHTML = '';
+        statusDiv.innerText = "Loading saved data...";
+
+        try {
+            const response = await fetch(`/view_saved?category=${encodeURIComponent(category)}`);
+            const result = await response.json();
+            spinner.style.display = 'none';
+
+            if (result.status === 'success') {
+                statusDiv.innerHTML = `<span style="color: #2196f3;">📖 [${result.category}] Loaded Total: ${result.count} | With Ingredients: ${result.with_ingredients}</span>`;
+                renderTable(result.data);
+            } else {
+                statusDiv.innerText = `Error loading saved data.`;
+            }
+        } catch (error) {
+            spinner.style.display = 'none';
+            statusDiv.innerText = `View Failed: ${error.message}`;
+        }
+    });
+
+    function renderTable(data, currentCategory = "") {
+        tableContainer.style.display = 'block';
+        if(data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No data available</td></tr>';
+            return;
+        }
+        
+        data.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            const catName = item.category || currentCategory || "N/A";
+            const isMissing = item.ingredients === "Not Found" || item.ingredients.includes("not found");
+            const style = isMissing ? 'color: #ff5252; opacity: 0.6;' : '';
+            
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td style="color: #ff758c; font-size:0.85rem;">${catName}</td>
+                <td><a href="${item.url}" target="_blank" class="prod-link">${item.name}</a></td>
+                <td class="ingredients-cell" style="${style}" onclick="toggleCell(this)">${item.ingredients}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function toggleCell(cell) {
+        cell.classList.toggle('expanded');
+    }
+</script>
+
+</body>
+</html>
