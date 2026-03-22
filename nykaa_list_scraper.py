@@ -65,7 +65,7 @@ def fetch_category_products(page_url):
         print(f"Request failed: {e}")
         return []
 
-def scrape_category_and_ingredients(base_url, max_pages=1, delay=1, csv_filename="data/nykaa_ingredients_realtime.csv", category_name="Unknown"):
+def scrape_category_and_ingredients(base_url, start_page=1, end_page=1, delay=1, csv_filename="data/nykaa_ingredients_realtime.csv", category_name="Unknown"):
     """
     Scrapes product list and then fetches ingredients for EACH product.
     Saves results to CSV in real-time, including category name.
@@ -84,7 +84,7 @@ def scrape_category_and_ingredients(base_url, max_pages=1, delay=1, csv_filename
     if os.path.exists(csv_filename) and os.path.getsize(csv_filename) == 0:
         write_header = True
 
-    for page in range(1, max_pages + 1):
+    for page in range(start_page, end_page + 1):
         page_url = f"{base_url}?page_no={page}&sort=popularity"
         print(f"\n--- Scraping Page {page} ---")
         
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # Test script standalone
     category_url = "https://www.nykaa.com/skin/moisturizers/face-moisturizer-day-cream/c/8394"
     print("Testing Nykaa List Scraper (1 page)...")
-    results = scrape_category_and_ingredients(category_url, max_pages=1, delay=1)
+    results = scrape_category_and_ingredients(category_url, start_page=1, end_page=1, delay=1)
     
     print(f"\nCollected {len(results)} items found with ingredients.")
     for idx, item in enumerate(results[:3]):  # Print first 3

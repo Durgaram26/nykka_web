@@ -36,7 +36,8 @@ def scrape():
     """Endpoint to trigger scraping."""
     category = request.form.get('category')
     custom_url = request.form.get('custom_url')
-    max_pages = request.form.get('pages', 1, type=int)
+    start_page = request.form.get('start_page', 1, type=int)
+    end_page = request.form.get('end_page', 1, type=int)
     delay = request.form.get('delay', 1, type=float)
     
     # Determine URL and Name
@@ -54,7 +55,7 @@ def scrape():
     print(f"Scraping triggered: {category_name} -> {category_url}")
     
     try:
-        results = scrape_category_and_ingredients(category_url, max_pages=max_pages, delay=delay, csv_filename=csv_file, category_name=category_name)
+        results = scrape_category_and_ingredients(category_url, start_page=start_page, end_page=end_page, delay=delay, csv_filename=csv_file, category_name=category_name)
         with_ingredients = sum(1 for item in results if item.get('ingredients') != "Not Found")
         
         return jsonify({

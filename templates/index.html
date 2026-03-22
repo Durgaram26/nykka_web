@@ -274,8 +274,12 @@
             <input type="text" id="custom_url" placeholder="https://www.nykaa.com/..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 250px;">
         </div>
         <div class="input-group">
-            <label for="pages">Pages</label>
-            <input type="number" id="pages" value="1" min="1" max="10" style="width: 80px;">
+            <label for="start_page">Start Page</label>
+            <input type="number" id="start_page" value="1" min="1" max="100" style="width: 80px;">
+        </div>
+        <div class="input-group">
+            <label for="end_page">End Page</label>
+            <input type="number" id="end_page" value="1" min="1" max="100" style="width: 80px;">
         </div>
         <div class="input-group">
             <label for="delay">Delay</label>
@@ -344,7 +348,8 @@
              return;
         }
         const custom_url = document.getElementById('custom_url').value;
-        const pages = document.getElementById('pages').value;
+        const start_page = document.getElementById('start_page').value;
+        const end_page = document.getElementById('end_page').value;
         const delay = document.getElementById('delay').value;
 
         statusDiv.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Scraping started... Saving to CSV in real-time.`;
@@ -354,7 +359,8 @@
         scrapeBtn.disabled = true;
 
         const formData = new FormData();
-        formData.append('pages', pages);
+        formData.append('start_page', start_page);
+        formData.append('end_page', end_page);
         formData.append('delay', delay);
         if (category === 'custom') {
             formData.append('custom_url', custom_url);
